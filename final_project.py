@@ -65,7 +65,10 @@ class Tasks:
                 pass
     
         # add an id that's one bigger than the largest id
-        task.id = max(ids) + 1
+        try:
+            task.id = max(ids) + 1
+        except:
+            task.id = 1
 
         self.tasks.append(task)
         # self.tasks.append(task.name)
