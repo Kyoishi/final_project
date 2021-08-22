@@ -71,9 +71,6 @@ class Tasks:
             task.id = 1
 
         self.tasks.append(task)
-        # self.tasks.append(task.name)
-        # self.tasks.append(task.priority)
-        # self.tasks.append(task.due_date)
         print("Created task")
     
     def list(self):
@@ -96,7 +93,6 @@ class Tasks:
                 # if the object's id matches the user input, change the status
                 if i.id == int(id):
                     i.completed = "done"
-                    print(i.completed)
                     new_list.append(i)
                 else:
                     new_list.append(i)
@@ -105,7 +101,13 @@ class Tasks:
 
         self.tasks = []
         for i in new_list:
+            print(i.name)
+            print(i.completed)
             self.tasks.append(i)
+
+        #for i in self.tasks:
+        #    print(i.name)
+        #    print(i.completed)
 
     def delete(self,id):
         """delele a selected task"""
@@ -119,7 +121,7 @@ class Tasks:
                     new_list.append(i)
             except:
                 pass
-
+        
         self.tasks = new_list
 
     def report(self):
@@ -158,10 +160,10 @@ elif args.report:
     x.report()
 elif args.done:
     x.done(args.done)
-    x.pickle_tasks
+    x.pickle_tasks()
 elif args.delete:
     x.delete(args.delete)
-    x.pickle_tasks
+    x.pickle_tasks()
 elif args.query:
     print('Query')
 else: 
