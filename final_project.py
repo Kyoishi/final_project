@@ -2,7 +2,6 @@
 import argparse
 # Use pickle to save and extract data
 import pickle
-
 # To record what time a new task object is created 
 import time
 
@@ -23,8 +22,10 @@ class Task:
     # set the id black at first
     self.id = ""
     # store the time the object is created 
+    # reference: https://note.nkmk.me/python-datetime-timedelta-measure-time/
     self.created = time.time()
-    self.completed = "not completed"
+    # First, set the status as "-"
+    self.completed = "-"
     self.name = name
     self.priority = priority
 
@@ -82,16 +83,18 @@ class Tasks:
         print("ID  Age  Due Date  Priority  Task")
         print("--  ---  --------  --------  ----")
         for i in self.tasks:
+            # print(type(i.due_date))
+            # print(i.due_date)
             # calculate the age by subtracting now from created
             # age = now - i.created
             if i.completed == "not completed":            
                 try:
                     now = time.time()
-                    # result is in minutes so divide by all the minutes in a day
-                    age = round((now - i.created)/ (60*24))
+                    # result is in minutes so divide by all the seconds in a day
+                    age = round((now - i.created)/ (60*24*60))
                     print("{} {}d {} {} {}".format(i.id,age,i.due_date,i.priority,i.name))
                 except:
-                    print("{} {} {}".format(i.due_date,i.priority,i.name))
+                    print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
             else:
                 pass
 
@@ -102,7 +105,8 @@ class Tasks:
             try:
                 # if the object's id matches the user input, change the status
                 if i.id == int(id):
-                    i.completed = "done"
+                    # record the time it's marked done
+                    i.completed = time.time()
                     new_list.append(i)
                 else:
                     new_list.append(i)
@@ -111,8 +115,6 @@ class Tasks:
 
         self.tasks = []
         for i in new_list:
-            print(i.name)
-            print(i.completed)
             self.tasks.append(i)
 
     def delete(self,id):
@@ -134,30 +136,41 @@ class Tasks:
         print("ID  Age  Due Date  Priority  Task  Created  Completed")
         print("--  ---  --------  --------  ----  -------  ---------")
         for i in self.tasks:
+            
+            round_num = round(float(i.created),0)
+            s = time.gmtime(int(round_num))
+            created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)    
+            print(created_format)
+            
             # calculate the age by subtracting now from created
-            # age = now - i.created
-            if i.completed == "not completed":            
-                try:
-                    now = time.time()
-                    # result is in minutes so divide by all the minutes in a day
-                    age = round((now - i.created)/ (60*24))
-                    print("{} {}d {} {} {}".format(i.id,age,i.due_date,i.priority,i.name))
-                except:
-                    print("{} {} {}".format(i.due_date,i.priority,i.name))
-            else:
-                pass
+            # age = now - i.created           
+            try:
+                now = time.time()
+                # result is in minutes so divide by all the seconds in a day
+                age = round((now - i.created)/ (60*24*60))
 
+                print("{} {}d {} {} {} {} {}".format(i.id,age,i.due_date,i.priority,i.name, created_format,i.completed))
+            except:
+                print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
+            
+        # created
+        # reference: https://note.nkmk.me/python-datetime-timedelta-measure-time/
+        
     def query(self,word):
         
         list = []
-        for i in self.tasks:
-
-            if word == i.name:
-                list.append(i)
+        # put the word out of a list and turn it into a string 
         
+        for w in word:
+
+            for i in self.tasks:
+            
+                if w == i.name:
+                    list.append(i)
+            
         for i in list:            
             try:
-                print("{} {} {} {} {} {} {}".format(i.id,i.created,i.due_date,i.priority,i.name, i.created,i.completed))
+                print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
             except:
                 print("{} {} {}".format(i.due_date,i.priority,i.name))
 
@@ -172,7 +185,7 @@ parser.add_argument('--done', help='input', type=int)
 parser.add_argument('--delete', help='input', type=int)
 parser.add_argument('--query', type=str, required=False, nargs="+", help="priority of task; default value is 1")
 parser.add_argument('--add', help='input')
-parser.add_argument('--due_date', help='input')
+parser.add_argument('--due_date', default="-", help='input')
 parser.add_argument('--priority', help='input', type=int)
 args = parser.parse_args()
 
