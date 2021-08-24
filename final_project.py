@@ -23,11 +23,16 @@ class Task:
     # set the id black at first
     self.id = ""
     # store the time the object is created 
-    self.created = time.ctime()
+    self.created = time.time()
     self.completed = "not completed"
     self.name = name
     self.priority = priority
-    self.due_date = due_date
+
+    # if due_date is blank, put "-" instead
+    if due_date == False:
+        self.due_date = "-"
+    else:
+        self.due_date = due_date
     
 
 class Tasks:
@@ -64,22 +69,27 @@ class Tasks:
             except:
                 pass
     
-        # add an id that's one bigger than the largest id
+        # add an id that is one bigger than the largest id
         try:
             task.id = max(ids) + 1
         except:
             task.id = 1
 
         self.tasks.append(task)
-        print("Created task")
+        print("Created task {}".format(task.id))
     
     def list(self):
         print("ID  Age  Due Date  Priority  Task")
         print("--  ---  --------  --------  ----")
         for i in self.tasks:
+            # calculate the age by subtracting now from created
+            # age = now - i.created
             if i.completed == "not completed":            
                 try:
-                    print("{} {} {} {} {}".format(i.id,i.created,i.due_date,i.priority,i.name))
+                    now = time.time()
+                    # result is in minutes so divide by all the minutes in a day
+                    age = round((now - i.created)/ (60*24))
+                    print("{} {}d {} {} {}".format(i.id,age,i.due_date,i.priority,i.name))
                 except:
                     print("{} {} {}".format(i.due_date,i.priority,i.name))
             else:
@@ -105,10 +115,6 @@ class Tasks:
             print(i.completed)
             self.tasks.append(i)
 
-        #for i in self.tasks:
-        #    print(i.name)
-        #    print(i.completed)
-
     def delete(self,id):
         """delele a selected task"""
         new_list = []
@@ -127,15 +133,33 @@ class Tasks:
     def report(self):
         print("ID  Age  Due Date  Priority  Task  Created  Completed")
         print("--  ---  --------  --------  ----  -------  ---------")
-        for i in self.tasks:            
+        for i in self.tasks:
+            # calculate the age by subtracting now from created
+            # age = now - i.created
+            if i.completed == "not completed":            
+                try:
+                    now = time.time()
+                    # result is in minutes so divide by all the minutes in a day
+                    age = round((now - i.created)/ (60*24))
+                    print("{} {}d {} {} {}".format(i.id,age,i.due_date,i.priority,i.name))
+                except:
+                    print("{} {} {}".format(i.due_date,i.priority,i.name))
+            else:
+                pass
+
+    def query(self,word):
+        
+        list = []
+        for i in self.tasks:
+
+            if word == i.name:
+                list.append(i)
+        
+        for i in list:            
             try:
                 print("{} {} {} {} {} {} {}".format(i.id,i.created,i.due_date,i.priority,i.name, i.created,i.completed))
             except:
                 print("{} {} {}".format(i.due_date,i.priority,i.name))
-
-# Make a Task instance 
-
-# print(y.name)
 
 # Make a Tasks instance 
 x = Tasks()
@@ -146,7 +170,7 @@ parser.add_argument('--list', help='input', action ='store_true')
 parser.add_argument('--report', help='input', action ='store_true')
 parser.add_argument('--done', help='input', type=int)
 parser.add_argument('--delete', help='input', type=int)
-parser.add_argument('--query', help='input', action ='store_true')
+parser.add_argument('--query', type=str, required=False, nargs="+", help="priority of task; default value is 1")
 parser.add_argument('--add', help='input')
 parser.add_argument('--due_date', help='input')
 parser.add_argument('--priority', help='input', type=int)
@@ -165,7 +189,7 @@ elif args.delete:
     x.delete(args.delete)
     x.pickle_tasks()
 elif args.query:
-    print('Query')
+    x.query(args.query)
 else: 
     if args.add and args.priority:
         y = Task(args.add,args.priority,args.due_date)
@@ -174,24 +198,3 @@ else:
     else:
         print("You need to input task name and priority")
     
-
-
-# parser.add_argument('--query', help='input')
-
-# parser.add_argument('x')  # 位置引数
-# parser.add_argument('-i')  # optional引数
-
-
-
-# x.add(y)
-# x.pickle_tasks()
-# if args.list:   
-    
-
-
-# check if the pickle file contains anything
-# temp = []
-# with open('.todo.pickle','rb') as f:
-#    temp = pickle.load(f)
-#    for i in temp:
-#        print(i)
