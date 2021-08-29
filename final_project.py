@@ -5,6 +5,12 @@ import pickle
 # To record what time a new task object is created 
 import time
 
+def time_format(input):
+    """Format the time in a certain way"""
+    s = time.gmtime(input)
+    created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)  
+    return created_format
+
 class Task:
   """Representation of a task
   
@@ -19,13 +25,15 @@ class Task:
   def __init__(self,name,priority,due_date):
     # record the time the new object is created
     
-    # set the id black at first
+    # set the id blank at first
     self.id = ""
     # store the time the object is created 
     # reference: https://note.nkmk.me/python-datetime-timedelta-measure-time/
     self.created = time.time()
     # First, set the status as "-"
     self.completed = "-"
+    # To record the time it's completed 
+    self.completed_time = "-"
     self.name = name
     self.priority = priority
 
@@ -105,8 +113,10 @@ class Tasks:
             try:
                 # if the object's id matches the user input, change the status
                 if i.id == int(id):
+                    # record it as done
+                    i.completed = "done"
                     # record the time it's marked done
-                    i.completed = time.time()
+                    i.completed_time = time.time()
                     new_list.append(i)
                 else:
                     new_list.append(i)
@@ -136,20 +146,19 @@ class Tasks:
         print("ID  Age  Due Date  Priority  Task  Created  Completed")
         print("--  ---  --------  --------  ----  -------  ---------")
         for i in self.tasks:
-            
-            round_num = round(float(i.created),0)
-            s = time.gmtime(int(round_num))
-            created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)    
-            print(created_format)
+
+            # turn the i.created into the right format 
+            # s = time.gmtime(i.created)
+            # created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)    
             
             # calculate the age by subtracting now from created
             # age = now - i.created           
             try:
                 now = time.time()
-                # result is in minutes so divide by all the seconds in a day
+                # The result is in minutes so divide by all the seconds in a day
                 age = round((now - i.created)/ (60*24*60))
 
-                print("{} {}d {} {} {} {} {}".format(i.id,age,i.due_date,i.priority,i.name, created_format,i.completed))
+                print("{} {}d {} {} {} {} {}".format(i.id,age,i.due_date,i.priority,i.name, time_format(i.created),time_format(i.completed_time)))
             except:
                 print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
             
