@@ -57,9 +57,13 @@ class Tasks:
         """Read pickled tasks file into a list"""
         # List of Task objects
         self.tasks = [] 
-        # open .todo.pickle file
-        with open('.todo.pickle','rb') as f:
-            self.tasks = pickle.load(f)
+        # if there's no content, skip the loading
+        try: 
+            # open .todo.pickle file
+            with open('.todo.pickle','rb') as f:
+                self.tasks = pickle.load(f)
+        except:
+            pass
 
     def pickle_tasks(self):
         """Picle your task list to a file"""
@@ -101,16 +105,20 @@ class Tasks:
                 # result is in minutes so divide by all the seconds in a day
                 age = round((now - i.created)/ (60*24*60))
                 # The elements are id, due date, priority and task name
-                line = (i.id, age, i.due_date, i.priority, i.name)
+                line = (i.id, '%sd'%age, i.due_date, i.priority, i.name )
                 data.append(line)
 
             # If the status is not completed, do not put the task in the list        
             else:
                 pass
         
+        # sort the data by due date (third element)
+        # reference: https://stackoverflow.com/questions/3121979/how-to-sort-a-list-tuple-of-lists-tuples-by-the-element-at-a-given-index
+        sorted_by_third = sorted(data, key=lambda tup: tup[2], reverse=True)
+
         # Print out in a table format using "tabulate"
         # reference: https://dev.classmethod.jp/articles/python-tabulate/
-        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
+        print(tabulate(sorted_by_third, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
 
     def done(self,id):
         """change the "completed" element into "done"""
@@ -154,12 +162,16 @@ class Tasks:
             age = round((now - i.created)/ (60*24*60))
             # if the task is not completed, do not show the completed time
             if i.completed == "-":
-                line = (i.id, age, i.due_date, i.priority, i.name, time_format(i.created),"-")
+                line = (i.id, '%sd'%age, i.due_date, i.priority, i.name, time_format(i.created),"-")
             else:
-                line = (i.id, age, i.due_date, i.priority, i.name, time_format(i.created),time_format(i.completed_time))
+                line = (i.id, '%sd'%age, i.due_date, i.priority, i.name, time_format(i.created),time_format(i.completed_time))
             data.append(line)
         
-        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task', 'Created', 'Completed' ]))
+        # sort the data by due date (third element)
+        # reference: https://stackoverflow.com/questions/3121979/how-to-sort-a-list-tuple-of-lists-tuples-by-the-element-at-a-given-index
+        sorted_by_third = sorted(data, key=lambda tup: tup[2], reverse=True)
+        
+        print(tabulate(sorted_by_third, headers=['ID','Age', 'Due Date', 'Priority', 'Task', 'Created', 'Completed' ]))
             
     def query(self,word):
         
@@ -168,8 +180,9 @@ class Tasks:
         for w in word:
 
             for i in self.tasks:
-            
-                if w == i.name:
+                
+                # if the queried word matches a task name and the task is not completed
+                if w == i.name and i.completed == "-":
                     list.append(i)
         
         data = []
@@ -177,10 +190,14 @@ class Tasks:
             now = time.time()
             # result is in minutes so divide by all the seconds in a day
             age = round((now - i.created)/ (60*24*60))
-            line = (i.id, age, i.due_date, i.priority, i.name)
+            line = (i.id, '%sd'%age, i.due_date, i.priority, i.name)
             data.append(line)
-            
-        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
+
+        # sort the data by due date (third element)
+        # reference: https://stackoverflow.com/questions/3121979/how-to-sort-a-list-tuple-of-lists-tuples-by-the-element-at-a-given-index
+        sorted_by_third = sorted(data, key=lambda tup: tup[2], reverse=True)
+
+        print(tabulate(sorted_by_third, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
 
 # Make a Tasks instance 
 x = Tasks()
@@ -196,7 +213,8 @@ parser.add_argument('--delete', help='input', type=int)
 parser.add_argument('--query', type=str, required=False, nargs="+", help="priority of task; default value is 1")
 parser.add_argument('--add', help='input')
 parser.add_argument('--due_date', default="-", help='input')
-parser.add_argument('--priority', help='input', type=int)
+# reference: https://stackoverflow.com/questions/15301147/python-argparse-default-value-or-specified-value
+parser.add_argument('--priority', help='input', type=int, default=1)
 args = parser.parse_args()
 
 # Depending on the command the user chooses, execute a different function 
@@ -214,9 +232,9 @@ elif args.delete:
 elif args.query:
     x.query(args.query)
 else: 
-    if args.add and args.priority:
+    if args.add:
         y = Task(args.add,args.priority,args.due_date)
         x.add(y)
         x.pickle_tasks()
     else:
-        print("You need to input task name and priority")
+        print("You need to input task name")
