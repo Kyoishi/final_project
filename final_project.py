@@ -4,11 +4,15 @@ import argparse
 import pickle
 # To record what time a new task object is created 
 import time
+# To show in table formats 
+from tabulate import tabulate
 
 def time_format(input):
     """Format the time in a certain way"""
-    s = time.gmtime(input)
-    created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)  
+    s = time.localtime(input)
+    # format the time in XXX
+    # reference: https://www.tutorialspoint.com/python/time_strftime.htm1 (650) 889-0583
+    created_format = time.strftime("%a %b %d %H:%M:%S %Z %Y ", s)  
     return created_format
 
 class Task:
@@ -23,8 +27,7 @@ class Task:
     due date: date, this is optional
   """
   def __init__(self,name,priority,due_date):
-    # record the time the new object is created
-    
+
     # set the id blank at first
     self.id = ""
     # store the time the object is created 
@@ -43,7 +46,6 @@ class Task:
     else:
         self.due_date = due_date
     
-
 class Tasks:
     """A list of `Task` objects.
     
@@ -55,21 +57,20 @@ class Tasks:
         """Read pickled tasks file into a list"""
         # List of Task objects
         self.tasks = [] 
-        # your code here
         # open .todo.pickle file
         with open('.todo.pickle','rb') as f:
             self.tasks = pickle.load(f)
 
     def pickle_tasks(self):
         """Picle your task list to a file"""
-        # your code here
+        # write the tasks to the file
         with open('.todo.pickle','wb') as f:
             pickle.dump(self.tasks,f)
 
     def add(self,task):
         """Add the command input to self.tasks"""
         
-        # pick up an object with the largest id from tasks
+        # pick up a taks with the largest id from tasks
         ids = []
         for i in self.tasks:
             try: 
@@ -83,44 +84,47 @@ class Tasks:
             task.id = max(ids) + 1
         except:
             task.id = 1
-
+        # add the task to the tasks
         self.tasks.append(task)
         print("Created task {}".format(task.id))
     
     def list(self):
-        print("ID  Age  Due Date  Priority  Task")
-        print("--  ---  --------  --------  ----")
+        """Show the data in a table format""" 
+        # Put elements of each task in data
+        data = []
         for i in self.tasks:
-            # print(type(i.due_date))
-            # print(i.due_date)
-            # calculate the age by subtracting now from created
-            # age = now - i.created
-            if i.completed == "not completed":            
-                try:
-                    now = time.time()
-                    # result is in minutes so divide by all the seconds in a day
-                    age = round((now - i.created)/ (60*24*60))
-                    print("{} {}d {} {} {}".format(i.id,age,i.due_date,i.priority,i.name))
-                except:
-                    print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
+            
+            # If the status of a task is completed, put the task in the data list
+            if i.completed == "-":                      
+                # Record the time to calculate the age of a task 
+                now = time.time()
+                # result is in minutes so divide by all the seconds in a day
+                age = round((now - i.created)/ (60*24*60))
+                # The elements are id, due date, priority and task name
+                line = (i.id, age, i.due_date, i.priority, i.name)
+                data.append(line)
+
+            # If the status is not completed, do not put the task in the list        
             else:
                 pass
+        
+        # Print out in a table format using "tabulate"
+        # reference: https://dev.classmethod.jp/articles/python-tabulate/
+        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
 
     def done(self,id):
-        """change the "completed element" into "done"""
+        """change the "completed" element into "done"""
+        # Create a new list to which I put renewed tasks 
         new_list = []
         for i in self.tasks:
-            try:
-                # if the object's id matches the user input, change the status
-                if i.id == int(id):
-                    # record it as done
-                    i.completed = "done"
-                    # record the time it's marked done
-                    i.completed_time = time.time()
-                    new_list.append(i)
-                else:
-                    new_list.append(i)
-            except:
+            # if the object's id matches the user input, change the status
+            if i.id == int(id):
+                # record it as done
+                i.completed = "done"
+                # record the time it's marked done
+                i.completed_time = time.time()
+                new_list.append(i)
+            else:
                 new_list.append(i)
 
         self.tasks = []
@@ -128,64 +132,61 @@ class Tasks:
             self.tasks.append(i)
 
     def delete(self,id):
-        """delele a selected task"""
+        """delete a selected task"""
+        
         new_list = []
         for i in self.tasks:
-            try:
-                # if the object's id matches the user input, skip adding to the new list
-                if i.id == int(id):
-                    pass
-                else:
-                    new_list.append(i)
-            except:
+            # if the object's id matches the user input, skip adding to the new list
+            if i.id == int(id):
                 pass
-        
+            else:
+                new_list.append(i)
+
+        # put the new list into the tasks    
         self.tasks = new_list
 
     def report(self):
-        print("ID  Age  Due Date  Priority  Task  Created  Completed")
-        print("--  ---  --------  --------  ----  -------  ---------")
-        for i in self.tasks:
-
-            # turn the i.created into the right format 
-            # s = time.gmtime(i.created)
-            # created_format = time.strftime("%Y-%m-%d %H:%M:%S", s)    
-            
-            # calculate the age by subtracting now from created
-            # age = now - i.created           
-            try:
-                now = time.time()
-                # The result is in minutes so divide by all the seconds in a day
-                age = round((now - i.created)/ (60*24*60))
-
-                print("{} {}d {} {} {} {} {}".format(i.id,age,i.due_date,i.priority,i.name, time_format(i.created),time_format(i.completed_time)))
-            except:
-                print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
-            
-        # created
-        # reference: https://note.nkmk.me/python-datetime-timedelta-measure-time/
         
+        data = []
+        for i in self.tasks:
+            now = time.time()
+            # The result is in minutes so divide by all the seconds in a day
+            age = round((now - i.created)/ (60*24*60))
+            # if the task is not completed, do not show the completed time
+            if i.completed == "-":
+                line = (i.id, age, i.due_date, i.priority, i.name, time_format(i.created),"-")
+            else:
+                line = (i.id, age, i.due_date, i.priority, i.name, time_format(i.created),time_format(i.completed_time))
+            data.append(line)
+        
+        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task', 'Created', 'Completed' ]))
+            
     def query(self,word):
         
         list = []
-        # put the word out of a list and turn it into a string 
-        
+        # for every string o
         for w in word:
 
             for i in self.tasks:
             
                 if w == i.name:
                     list.append(i)
-            
+        
+        data = []
         for i in list:            
-            try:
-                print("{} {} {} {}".format(i.id,i.due_date,i.priority,i.name))
-            except:
-                print("{} {} {}".format(i.due_date,i.priority,i.name))
+            now = time.time()
+            # result is in minutes so divide by all the seconds in a day
+            age = round((now - i.created)/ (60*24*60))
+            line = (i.id, age, i.due_date, i.priority, i.name)
+            data.append(line)
+            
+        print(tabulate(data, headers=['ID','Age', 'Due Date', 'Priority', 'Task']))
 
 # Make a Tasks instance 
 x = Tasks()
 
+# Use argparse to take user input
+# reference: https://tma15.github.io/blog/2020/11/14/pythonargparseの使い方-入門編/
 parser = argparse.ArgumentParser('Task Manager')
 
 parser.add_argument('--list', help='input', action ='store_true')
@@ -219,4 +220,3 @@ else:
         x.pickle_tasks()
     else:
         print("You need to input task name and priority")
-    
