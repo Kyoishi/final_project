@@ -206,13 +206,13 @@ x = Tasks()
 # reference: https://tma15.github.io/blog/2020/11/14/pythonargparseの使い方-入門編/
 parser = argparse.ArgumentParser('Task Manager')
 
-parser.add_argument('--list', help='input', action ='store_true')
-parser.add_argument('--report', help='input', action ='store_true')
-parser.add_argument('--done', help='input', type=int)
-parser.add_argument('--delete', help='input', type=int)
+parser.add_argument('--list', help='show incompleted tasks', action ='store_true')
+parser.add_argument('--report', help='show all the tasks', action ='store_true')
+parser.add_argument('--done', help='mark a task done', type=int)
+parser.add_argument('--delete', help='delete a task', type=int)
 parser.add_argument('--query', type=str, required=False, nargs="+", help="priority of task; default value is 1")
-parser.add_argument('--add', help='input')
-parser.add_argument('--due_date', default="-", help='input')
+parser.add_argument('--add', help='add a new task. name is required, and the priority should be 1 to 3.')
+parser.add_argument('--due_date', default="-", help='due date')
 # reference: https://stackoverflow.com/questions/15301147/python-argparse-default-value-or-specified-value
 parser.add_argument('--priority', help='input', type=int, default=1)
 args = parser.parse_args()
@@ -237,4 +237,4 @@ else:
         x.add(y)
         x.pickle_tasks()
     else:
-        print("You need to input task name")
+        print('There was an error in creating your task. Run "todo -h" for usage instructions')
